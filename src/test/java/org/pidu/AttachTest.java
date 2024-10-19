@@ -37,9 +37,26 @@ public class AttachTest {
         st.execute("""
                 BEGIN;
                 """);
-        st.execute("insert into films1 values (1, 'dr', 'musician', 5)");
-        st.execute("alter table films1 add constraint check_code check (code = 'dr');");
-        st.execute("ALTER TABLE films ATTACH PARTITION films1 for values in ('dr')");
+        st.execute("insert into films_partition values (1, 'dr', 'musician',5)");
+        st.execute("alter table films_partition add constraint check_code check (code = 'dr');");
+        st.execute("ALTER TABLE films ATTACH PARTITION films_partition for values in ('dr')");
+
+        printLocks();
+    }
+
+    @Test
+    public void runAttachWithAdditionalConstraints() throws SQLException {
+        prepareTables();
+
+        Connection con = dataSource.getConnection();
+        Statement st = con.createStatement();
+        st.execute("""
+                BEGIN;
+                """);
+        st.execute("insert into films_partition values (1, 'dr', 'musician', 5)");
+        st.execute("alter table films_partition add constraint check_code check (code = 'dr');");
+        st.execute("alter table films_partition ADD CONSTRAINT fk_did FOREIGN KEY (did) REFERENCES refs (id);");
+        st.execute("ALTER TABLE films ATTACH PARTITION films_partition for values in ('dr')");
 
         printLocks();
     }
@@ -76,7 +93,7 @@ public class AttachTest {
                         partition by list (code);
                     """);
             st.execute("insert into refs values (5, 5)");
-            st.execute("create table films1 (LIKE films INCLUDING ALL)");
+            st.execute("create table films_partition (LIKE films INCLUDING ALL)");
         }
     }
 
