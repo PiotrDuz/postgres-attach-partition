@@ -34,12 +34,16 @@ public class AttachTest {
 
         Connection con = dataSource.getConnection();
         Statement st = con.createStatement();
-        st.execute("""
-                BEGIN;
-                """);
         st.execute("insert into films_partition values (1, 'dr', 'musician',5)");
         st.execute("alter table films_partition add constraint check_code check (code = 'dr');");
-        st.execute("ALTER TABLE films ATTACH PARTITION films_partition for values in ('dr')");
+        con.close();
+
+        Connection con2 = dataSource.getConnection();
+        Statement st2 = con2.createStatement();
+        st2.execute("""
+                BEGIN;
+                """);
+        st2.execute("ALTER TABLE films ATTACH PARTITION films_partition for values in ('dr')");
 
         printLocks();
     }
@@ -50,13 +54,17 @@ public class AttachTest {
 
         Connection con = dataSource.getConnection();
         Statement st = con.createStatement();
-        st.execute("""
-                BEGIN;
-                """);
         st.execute("insert into films_partition values (1, 'dr', 'musician', 5)");
         st.execute("alter table films_partition add constraint check_code check (code = 'dr');");
         st.execute("alter table films_partition ADD CONSTRAINT fk_did FOREIGN KEY (did) REFERENCES refs (id);");
-        st.execute("ALTER TABLE films ATTACH PARTITION films_partition for values in ('dr')");
+        con.close();
+
+        Connection con2 = dataSource.getConnection();
+        Statement st2 = con2.createStatement();
+        st2.execute("""
+                BEGIN;
+                """);
+        st2.execute("ALTER TABLE films ATTACH PARTITION films_partition for values in ('dr')");
 
         printLocks();
     }
